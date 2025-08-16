@@ -13,3 +13,10 @@ Iremos utilizar as tecnologias para realizar o desenvolvimento de projetos volta
 - JPA
 - Bootstrap
 - PostgreSQL
+
+Exemplo para enviar adicionar arquivo no repositorio
+```
+git add nome_do_arquivo
+git commit -m "Adicionando uma mensagem"
+git push -u origin branch_que_deseja
+```
