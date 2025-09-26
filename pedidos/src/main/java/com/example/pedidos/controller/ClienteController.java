@@ -8,6 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class ClienteController {
     private final ClienteService clienteService;
 
@@ -17,7 +18,19 @@ public class ClienteController {
 
     @GetMapping("/clientes")
     public List<Cliente> getCliente(){
+        System.out.println("Chegouuuu" + clienteService.listarTodosClientes());
         return clienteService.listarTodosClientes();
+    }
+
+    @PostMapping("/adicionar_clientes")
+    public Cliente adicionarCliente(@RequestBody Cliente cliente) {
+        System.out.println("Clienteeee = " + cliente);
+        return clienteService.adicionarCliente(cliente);
+    }
+
+    @PostMapping("/clientes/{id}/pedidos")
+    public Pedido adicionarPedido(@PathVariable Long id, @RequestBody Pedido pedido) {
+        return clienteService.adicionarPedido(id, pedido);
     }
 
     @GetMapping("clientes/{id}/pedidos")
@@ -30,5 +43,25 @@ public class ClienteController {
         return clienteService.contarPedidosPorCliente(id);
     }
 
+    @PutMapping("/clientes/{id}")
+    public Cliente atualizarCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
+        return clienteService.atualizarCliente(id, cliente);
+    }
+
+
+    @DeleteMapping("/clientes/{id}")
+    public void deletarCliente(@PathVariable Long id) {
+        clienteService.deletarCliente(id);
+    }
+
+    @PutMapping("/pedidos/{id}")
+    public Pedido atualizarPedido(@PathVariable Long id, @RequestBody Pedido pedido) {
+        return clienteService.atualizarPedido(id, pedido);
+    }
+
+    @DeleteMapping("/pedidos/{id}")
+    public void deletarPedido(@PathVariable Long id) {
+        clienteService.deletarPedido(id);
+    }
 
 }

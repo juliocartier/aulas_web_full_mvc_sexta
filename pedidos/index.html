@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Clientes e Pedidos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input, button { margin: 5px; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <h1>Clientes e Pedidos</h1>
+
+  <h2>Adicionar Cliente</h2>
+  <input id="novoClienteNome" placeholder="Nome">
+  <input id="novoClienteEmail" placeholder="Email">
+  <button onclick="adicionarCliente()">Adicionar Cliente</button>
+
+  <h2>Lista de Clientes</h2>
+  <button onclick="carregarClientes()">Carregar Clientes</button>
+  <ul id="clientes"></ul>
+
+  <script>
+    const apiBase = "http://localhost:8080/api";
+
+    // Carregar todos os clientes
+    async function carregarClientes() {
+      try {
+        const res = await fetch(`${apiBase}/clientes`);
+        const clientes = await res.json();
+        const ul = document.getElementById("clientes");
+        ul.innerHTML = "";
+
+        clientes.forEach(cliente => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <strong>${cliente.id} - ${cliente.nome}</strong> (${cliente.email})
+            <button onclick="deletarCliente(${cliente.id})">Deletar</button>
+            <button onclick="mostrarFormPedido(${cliente.id})">Adicionar Pedido</button>
+            <ul id="pedidos-${cliente.id}"></ul>
+          `;
+          ul.appendChild(li);
+
+          // Carregar pedidos do cliente
+          carregarPedidos(cliente.id);
+        });
+      } catch (err) {
+        alert("Erro ao carregar clientes: " + err.message);
+      }
+    }
+
+    // Adicionar cliente
+    async function adicionarCliente() {
+      const nome = document.getElementById("novoClienteNome").value;
+      const email = document.getElementById("novoClienteEmail").value;
+
+      console.log(nome, email);
+      try {
+        const res = await fetch(`${apiBase}/adicionar_clientes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, email })
+        });
+        if (!res.ok) throw new Error("Erro ao adicionar cliente");
+        document.getElementById("novoClienteNome").value = "";
+        document.getElementById("novoClienteEmail").value = "";
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Deletar cliente
+    async function deletarCliente(id) {
+      try {
+        await fetch(`${apiBase}/clientes/${id}`, { method: "DELETE" });
+        carregarClientes();
+      } catch (err) {
+        alert("Erro ao deletar cliente: " + err.message);
+      }
+    }
+
+    // Carregar pedidos de um cliente
+    async function carregarPedidos(clienteId) {
+      try {
+        const res = await fetch(`${apiBase}/clientes/${clienteId}/pedidos`);
+        const pedidos = await res.json();
+        const ulPedidos = document.getElementById(`pedidos-${clienteId}`);
+        ulPedidos.innerHTML = "";
+        pedidos.forEach(p => {
+          const li = document.createElement("li");
+          li.textContent = `${p.id} - ${p.descricao}`;
+          ulPedidos.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao carregar pedidos:", err);
+      }
+    }
+
+    // Mostrar formulário para adicionar pedido
+    function mostrarFormPedido(clienteId) {
+      const ulPedidos = document.getElementById(`pedidos-${clienteId}`);
+      const liForm = document.createElement("li");
+      liForm.innerHTML = `
+        <input id="descricaoPedido-${clienteId}" placeholder="Descrição do Pedido">
+        <button onclick="adicionarPedido(${clienteId})">Adicionar</button>
+      `;
+      ulPedidos.appendChild(liForm);
+    }
+
+    // Adicionar pedido a um cliente
+    async function adicionarPedido(clienteId) {
+      const descricao = document.getElementById(`descricaoPedido-${clienteId}`).value;
+      try {
+        await fetch(`${apiBase}/clientes/${clienteId}/pedidos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ descricao })
+        });
+        carregarPedidos(clienteId);
+      } catch (err) {
+        alert("Erro ao adicionar pedido: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
